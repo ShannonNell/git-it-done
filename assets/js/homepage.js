@@ -4,21 +4,6 @@ var nameInputEl = document.querySelector("#username");
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
 
-//Get user repos 
-var getUserRepos = function(user) {
-    // format the github api url 
-    // "weblink" + username on GitHub + "/repos" will enable different users to be inputed into the link
-    var apiUrl = "https://api.github.com/users/" + user + "/repos";
-
-    //HTTP request to GitHub API and response//make request to the url
-    fetch(apiUrl).then(function(response) {
-        //format response as JSON to return another promise(then), whose callback function captures the actual data - the array
-        response.json().then(function(data) {
-            displayRepos(data, user);
-        });
-    });
-};
-
 //When form is submitted, find the GitHub user
 var formSubmitHandler = function(event) {
     event.preventDefault();
@@ -34,10 +19,41 @@ var formSubmitHandler = function(event) {
     }
 };
 
+//Get user repos 
+var getUserRepos = function(user) {
+    // format the github api url 
+    // "weblink" + username on GitHub + "/repos" will enable different users to be inputed into the link
+    var apiUrl = "https://api.github.com/users/" + user + "/repos";
+
+    //HTTP request to GitHub API and response//make request to the url
+    fetch(apiUrl)
+        .then(function(response) {
+        //.ok used to find if there is a username named what the user typed in
+        // request was successful
+        if (response.ok) {
+            console.log(response);
+            response.json().then(function(data) {
+                console.log(data);
+                displayRepos(data, user);
+            });
+            } else {
+            alert('Error: GitHub User Not Found');
+            }
+        })
+        .catch(function(error) {
+            alert('Unable to connect to GitHub');
+        });
+};
+
+
 //Accepts array of repo data and term searched
 var displayRepos = function(repos, searchTerm) {
-    //clear old content
-    repoContainerEl.textContent = "";
+    // check if api returned any repos
+    if (repos.length === 0) {
+        repoContainerEl.textContent = "No repositories found.";
+        return;
+    }
+
     repoSearchTerm.textContent = searchTerm;
 
    // loop over repos
